@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -21,10 +19,10 @@ type User struct {
 	UserName   string
 	Password   string
 	SettingsId int
+	GameDataId int
 }
 
-func main() {
-	r := gin.Default()
+func getUserData(id string) []User {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
@@ -65,37 +63,31 @@ func main() {
 	}
 
 	// Print the retrieved data
-	fmt.Println("Retrieved data:")
-	for _, result := range results {
-		fmt.Printf("Name: %s, Email: %s\n", result.FirstName, result.Email)
-	}
+	return results
+}
 
-	// Disconnect from the MongoDB server
-	err = client.Disconnect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
+func main() {
+	router := gin.Default()
 
-	// get the user, if they do not exist create them.
-	r.POST("/getOrCreate", func(c *gin.Context) {
+	// get the user
+	router.POST("/GetUserByName/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		data := getUserData(id)
+		c.JSON(200, data)
+	})
+
+	// Create a user
+	router.POST("/RegisterUser/:test", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"IsDisabled": "false",
-			"username":   "nadroj",
-			"password":   "password",
-			"email":      "nadroj@gmail.com",
-			"settingsid": "1",
+			"success": c.Param("test"),
 		})
 	})
 
 	// update user
-	r.POST("/update", func(c *gin.Context) {
+	router.POST("/update", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"IsDisabled": "false",
-			"username":   "nadroj",
-			"password":   "password",
-			"email":      "nadroj@gmail.com",
-			"settingsid": "1",
+			"success": "false",
 		})
 	})
-	r.Run()
+	log.Fatal(router.Run(":8000"))
 }
