@@ -12,14 +12,14 @@ import (
 )
 
 type User struct {
-	IsDisabled bool
+	IsDisabled bool // hidden
 	FirstName  string
 	LastName   string
 	Email      string
 	UserName   string
 	Password   string
-	SettingsId int
-	GameDataId int
+	SettingsId int // hidden
+	GameDataId int // hidden
 }
 
 func getUserData(id string) []User {
@@ -89,5 +89,10 @@ func main() {
 			"success": "false",
 		})
 	})
+
+	router.POST("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{"result": "pong!"})
+	})
+
 	log.Fatal(router.Run(":8000"))
 }
